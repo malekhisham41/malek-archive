@@ -31,9 +31,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset
 <footer>Malek’s Archive</footer>
 </main>
 <script>
-/* Add content: ITEMS["Year 2/Semester 1/CVS/Physiology/Lecture 1 title/PDF by Malek"] = [{title:"Lecture 1", pdf:"pdfs/x.pdf"}]  (leave pdf out for a text-only entry) */
-const MODULES = {"Year 2/Semester 1":["CVS","Renal","Psychology"]};
-const LECTURES = {}; /* Keys start with "Year 2/Semester 1/": LECTURES["Year 2/Semester 1/CVS/Physiology"] = [...]; Psychology: LECTURES["Year 2/Semester 1/Psychology"] */
+/* Add content: ITEMS["الفرقة الثانية/Semester 1/CVS/Physiology/Lecture 1 title/PDF by Malek"] = [{title:"Lecture 1", pdf:"pdfs/x.pdf"}]  (leave pdf out for a text-only entry) */
+const MODULES = {"الفرقة الثانية/Semester 1":["CVS","Renal","Psychology"]};
+const LECTURES = {}; /* Keys start with "الفرقة الثانية/Semester 1/": LECTURES["الفرقة الثانية/Semester 1/CVS/Physiology"] = [...]; Psychology: LECTURES["الفرقة الثانية/Semester 1/Psychology"] */
 const ITEMS = {};
 const CORE = ["Physiology","Anatomy","Embryology","Pharmacology","Pathology","Biochemistry","Histology","Microbiology"];
 const TREE = {
@@ -54,7 +54,7 @@ function render(){
     else if(i>0)cr.append(el("span","",p));
   });
   const v=$("view");v.replaceChildren();
-  const YEARS=["Year 1","Year 2","Year 3","Year 4","Year 5"], SEMS=["Semester 1","Semester 2"];
+  const YEARS=["الفرقة الأولى", "الفرقة الثانية", "الفرقة الثالثة", "الفرقة الرابعة", "الفرقة الخامسة"], SEMS=["Semester 1","Semester 2"];
   const p=path.slice(2), mod=p[0], ld=(mod&&TREE[mod])?2:1, n=p.length;
   let level;
   if(path.length===0){$("title").textContent="Choose a year";level=YEARS.map(y=>[y,()=>go([y])])}
