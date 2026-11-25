@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Malek’s Archive</title><style>
+:root{--bg:#2a0d17;--card:#3a1423;--line:#5b2a3c;--ink:#f6efe9;--ink2:#cfb3ba;--teal:#f0c9cf}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:24px 20px 48px}h1{font-size:34px;margin:8px 0}h2{font-size:18px;margin:28px 0 12px;color:var(--ink2);font-weight:500}
+.note{color:var(--ink2);font-size:14px}.chips{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 12px}
+.chip,.tab,.btn{min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:8px;background:var(--card);font:inherit;cursor:pointer;display:inline-flex;align-items:center;text-decoration:none;color:var(--ink)}
+.chip.on,.tab.on{border-color:var(--teal);color:var(--teal);font-weight:600}
+input{width:100%;min-height:44px;padding:0 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+input::placeholder{color:var(--ink2)}
+.lec{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:var(--card)}
+.lec summary{padding:12px 16px;min-height:44px;cursor:pointer;display:flex;flex-direction:column}.sub{color:var(--ink2);font-size:13px}
+.body{padding:0 16px 16px;border-top:1px solid var(--line)}.tabs{display:flex;gap:8px;padding:12px 0;flex-wrap:wrap}
+.btn{margin-right:8px;background:var(--teal);color:#2a0d17;border-color:var(--teal);font-weight:600}.btn.alt{background:transparent;color:var(--ink);border-color:var(--line)}.muted{color:var(--ink2)}
+footer{margin-top:40px;color:var(--ink2);font-size:14px}button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.top{display:flex;align-items:center;gap:16px}.top h1{margin:0}
+.avatar{flex:none;width:72px;height:72px;border-radius:50%;border:2px dashed var(--line);background:var(--card) center/cover no-repeat}.avatar.has{border:2px solid var(--teal)}
+h1{text-transform:uppercase;letter-spacing:.04em;font-size:clamp(20px,6vw,34px);line-height:1.2}
+.avatar{width:64px;height:64px}
+.byline{margin:4px 0 0;font-size:13px;letter-spacing:.14em;color:var(--ink2);font-weight:600}
+</style></head>
+<body><main>
+<header><div class="top"><div class="avatar" id="avatar" role="img" aria-label="Photo of Malek (empty for now)"></div><div><h1>Malek’s Archive</h1><p class="byline">BY : MALEK HISHAM</p></div></div><p>Lecture summaries, transcripts and PDFs, free for everyone. Pick a subject and open a lecture.</p>
+<p class="note">Preview with sample lectures. No real PDFs yet.</p></header>
+<section><div id="subjects" class="chips" role="group" aria-label="Subject"></div>
+<input id="q" type="search" placeholder="Search lectures" aria-label="Search lectures"></section>
+<section><h2 id="count"></h2><div id="list"></div><p id="empty" hidden>No lecture matches.</p></section>
+<footer>Malek’s Archive</footer>
+</main><script>
+// Add a lecture by adding an entry. Put the PDF in /pdfs and set pdf: "pdfs/file.pdf" (leave "" if none).
+window.LECTURES = [
+  { id: 1, subject: "Psychology", title: "Attention (sample)", summary: ["Attention is choosing some information and ignoring the rest.", "Types: selective, sustained, divided.", "Sample text only."], transcript: "Full lecture transcript goes here. Sample text only.", pdf: "" },
+  { id: 2, subject: "Psychology", title: "Memory (sample)", summary: ["Memory is split into sensory, short-term and long-term.", "Sample text only."], transcript: "Full lecture transcript goes here. Sample text only.", pdf: "" },
+  { id: 3, subject: "CVS", title: "Cardiac cycle (sample)", summary: ["The cycle has contraction and relaxation phases.", "Sample text only."], transcript: "Full lecture transcript goes here. Sample text only.", pdf: "" },
+  { id: 4, subject: "Renal", title: "Glomerular filtration (sample)", summary: ["Filtration happens in the glomerulus under pressure.", "Sample text only."], transcript: "Full lecture transcript goes here. Sample text only.", pdf: "" }
+];
+
+const L = window.LECTURES, subs = ["All", ...new Set(L.map(l => l.subject))];
+let subject = "All", q = "";
+const $ = id => document.getElementById(id);
+function el(t, c, txt) { const e = document.createElement(t); if (c) e.className = c; if (txt) e.textContent = txt; return e; }
+function renderChips() {
+  $("subjects").replaceChildren(...subs.map(s => { const b = el("button", s === subject ? "chip on" : "chip", s); b.type = "button"; b.onclick = () => { subject = s; renderChips(); renderList(); }; return b; }));
+}
+function lecture(l) {
+  const d = el("details", "lec"), s = el("summary"); s.append(el("strong", "", l.title), el("span", "sub", l.subject)); d.append(s);
+  const body = el("div", "body"), tabs = el("div", "tabs"), pane = el("div", "pane");
+  const views = { Summary: () => { const u = el("ul"); l.summary.forEach(x => u.append(el("li", "", x))); return u; },
+    Transcript: () => el("p", "", l.transcript),
+    PDF: () => { if (!l.pdf) return el("p", "muted", "PDF not available yet."); const a = el("a", "btn", "Open PDF"); a.href = l.pdf; a.target = "_blank"; a.rel = "noopener"; const w = el("div"); const dl = el("a", "btn alt", "Download"); dl.href = l.pdf; dl.download = ""; w.append(a, dl); return w; } };
+  const show = k => { [...tabs.children].forEach(b => b.className = b.textContent === k ? "tab on" : "tab"); pane.replaceChildren(views[k]()); };
+  Object.keys(views).forEach(k => { const b = el("button", "tab", k); b.type = "button"; b.onclick = () => show(k); tabs.append(b); });
+  body.append(tabs, pane); d.append(body); show("Summary"); return d;
+}
+function renderList() {
+  const r = L.filter(l => (subject === "All" || l.subject === subject) && (l.title + " " + l.subject).toLowerCase().includes(q.trim().toLowerCase()));
+  $("count").textContent = r.length + " of " + L.length + " lectures";
+  $("list").replaceChildren(...r.map(lecture)); $("empty").hidden = r.length > 0;
+}
+$("q").oninput = e => { q = e.target.value; renderList(); };
+renderChips(); renderList();
+
+// Photo slot: put profile.jpg next to index.html and it shows up automatically.
+(function(){const i=new Image();i.onload=()=>{const a=document.getElementById("avatar");a.style.backgroundImage="url(profile.jpg)";a.classList.add("has");a.setAttribute("aria-label","Photo of Malek")};i.src="profile.jpg";})();
+</script></body></html>
