@@ -11,8 +11,8 @@ h1{margin:0;text-transform:uppercase;letter-spacing:.04em;font-size:clamp(20px,6
 .byline{margin:4px 0 0;font-size:13px;letter-spacing:.14em;color:var(--ink2);font-weight:600}
 .college{margin:18px 0 0;font-size:15px;color:var(--acc);letter-spacing:.02em}
 h2{font-size:18px;margin:26px 0 12px;color:var(--ink2);font-weight:500}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.box{min-height:56px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center}
+.grid{display:flex;flex-direction:column;gap:12px}
+.box{width:100%;min-height:68px;padding:14px 18px;font-size:18px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center}
 .box:hover{border-color:var(--acc)}
 .crumbs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:22px;font-size:14px;color:var(--ink2)}
 .crumbs button{background:none;border:0;color:var(--acc);font:inherit;cursor:pointer;padding:8px 2px;min-height:44px;text-decoration:underline}
@@ -31,8 +31,9 @@ button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset
 <footer>Malek’s Archive</footer>
 </main>
 <script>
-/* Add content: ITEMS["CVS/Physiology/Lecture 1 title/PDF by Malek"] = [{title:"Lecture 1", pdf:"pdfs/x.pdf"}]  (leave pdf out for a text-only entry) */
-const LECTURES = {}; /* LECTURES["CVS/Physiology"] = ["Lecture 1 title", ...]; Psychology: LECTURES["Psychology"] */
+/* Add content: ITEMS["Year 2/Semester 1/CVS/Physiology/Lecture 1 title/PDF by Malek"] = [{title:"Lecture 1", pdf:"pdfs/x.pdf"}]  (leave pdf out for a text-only entry) */
+const MODULES = {"Year 2/Semester 1":["CVS","Renal","Psychology"]};
+const LECTURES = {}; /* Keys start with "Year 2/Semester 1/": LECTURES["Year 2/Semester 1/CVS/Physiology"] = [...]; Psychology: LECTURES["Year 2/Semester 1/Psychology"] */
 const ITEMS = {};
 const CORE = ["Physiology","Anatomy","Embryology","Pharmacology","Pathology","Biochemistry","Histology","Microbiology"];
 const TREE = {
@@ -53,18 +54,25 @@ function render(){
     else if(i>0)cr.append(el("span","",p));
   });
   const v=$("view");v.replaceChildren();
-  const mod=path[0], ld=(mod&&TREE[mod])?2:1, n=path.length;
+  const YEARS=["Year 1","Year 2","Year 3","Year 4","Year 5"], SEMS=["Semester 1","Semester 2"];
+  const p=path.slice(2), mod=p[0], ld=(mod&&TREE[mod])?2:1, n=p.length;
   let level;
-  if(n===0){$("title").textContent="Choose a module";level=Object.keys(TREE).map(m=>[m,()=>go([m])])}
-  else if(n<ld){$("title").textContent=mod;level=TREE[mod].map(s=>[s,()=>go([mod,s])])}
+  if(path.length===0){$("title").textContent="Choose a year";level=YEARS.map(y=>[y,()=>go([y])])}
+  else if(path.length===1){$("title").textContent=path[0];level=SEMS.map(s=>[s,()=>go([path[0],s])])}
+  else if(n===0){
+    $("title").textContent=path[0]+" · "+path[1];
+    const ms=MODULES[path.join("/")]||[];
+    if(!ms.length){v.append(el("p","muted","No modules added yet."));return}
+    level=ms.map(m=>[m,()=>go([...path,m])])}
+  else if(n<ld){$("title").textContent=mod;level=TREE[mod].map(s=>[s,()=>go([...path,s])])}
   else if(n===ld){
-    $("title").textContent=path[n-1]+" · Lectures";
+    $("title").textContent=path[path.length-1]+" · Lectures";
     const ls=LECTURES[path.join("/")]||[];
     if(!ls.length){v.append(el("p","muted","No lectures added yet."));return}
     level=ls.map(l=>[l,()=>go([...path,l])])}
-  else if(n===ld+1){$("title").textContent=path[n-1];level=RES.map(r=>[r,()=>go([...path,r])])}
+  else if(n===ld+1){$("title").textContent=path[path.length-1];level=RES.map(r=>[r,()=>go([...path,r])])}
   else{
-    $("title").textContent=path[n-1];
+    $("title").textContent=path[path.length-1];
     const items=ITEMS[path.join("/")]||[];
     if(!items.length)v.append(el("p","muted","Nothing added here yet."));
     items.forEach(i=>{const d=el("div","item");d.append(el("strong","",i.title));
